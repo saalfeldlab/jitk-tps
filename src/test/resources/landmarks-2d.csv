@@ -1,0 +1,12 @@
+# Sample 2d landmarks: a 3x3 grid of moving points and their warped targets.
+# Columns are the moving point followed by the corresponding target point.
+mx,my,tx,ty
+0,0,2,-1
+50,0,53,4
+100,0,101,-2
+0,50,-3,52
+50,50,58,57
+100,50,104,48
+0,100,1,103
+50,100,47,106
+100,100,99,101

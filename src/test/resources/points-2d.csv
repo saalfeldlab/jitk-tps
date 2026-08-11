@@ -1,0 +1,12 @@
+# Sample 2d points to transform with the spline fit from landmarks-2d.csv.
+# Includes points on landmarks, between them, and outside their bounding box.
+x,y
+0,0
+50,50
+100,100
+25,25
+75,25
+25,75
+33.3,66.7
+-10,60
+110,110
