@@ -242,7 +242,7 @@ public class ThinPlateR2LogRSplineKernelTransform implements Serializable
 	/**
 	 * Sets the weights. Checks that the length matches the number of landmarks.
 	 */
-	private void setWeights( final double[] weights )
+	protected void setWeights( final double[] weights )
 	{
 		// make sure the length matches number
 		// of landmarks
@@ -564,10 +564,7 @@ public class ThinPlateR2LogRSplineKernelTransform implements Serializable
 		for ( int lnd = 0; lnd < nLandmarks; lnd++ )
 		{
 			srcPtDisplacement( lnd, thispt, tmpDisplacement );
-
 			final double nrm = r2LogrFromDisplacement( tmpDisplacement );
-//			final double nrm = r2Logr( Math.sqrt( normSqrd( tmpDisplacement )));
-
 			for ( int d = 0; d < ndims; d++ )
 				result[ d ] += nrm * dMatrix.get( d, di );
 
@@ -594,10 +591,9 @@ public class ThinPlateR2LogRSplineKernelTransform implements Serializable
 	 */
 	public double[][] r2LogrDerivative( final double[] p )
 	{
-		// derivativeMatrix[j][d] gives the derivative of component j with
-		// respect to component d
+		// derivativeMatrix[d][j] gives the derivative of component d with
+		// respect to component j
 		final double[][] derivativeMatrix = new double[ ndims ][ ndims ];
-
 		final double[] tmpDisplacement = new double[ ndims ];
 		Arrays.fill( tmpDisplacement, 0 );
 
@@ -620,12 +616,13 @@ public class ThinPlateR2LogRSplineKernelTransform implements Serializable
 			else
 				term1 = r * (2 * Math.log( r ) + 1) / Math.sqrt( r2 );
 
+
 			for ( int d = 0; d < ndims; d++ )
 			{
 				for ( int j = 0; j < ndims; j++ )
 				{
 					final double multiplier = term1 * (-tmpDisplacement[ j ]);
-					derivativeMatrix[ j ][ d ] += multiplier * dMatrix.get( d, lmi );
+					derivativeMatrix[ d ][ j ] += multiplier * dMatrix.get( d, lmi );
 				}
 			}
 			lmi++;

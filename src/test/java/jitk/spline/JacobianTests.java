@@ -71,8 +71,62 @@ public class JacobianTests
 				final DMatrixRMaj jacobianMtx = new DMatrixRMaj( j );
 				final double jdet = CommonOps_DDRM.det( jacobianMtx );
 
-				assertEquals( "Affine determinant pt (" + i + ")", 4, jdet, 0.01 );
+				assertEquals( "Affine determinant pt (" + i + ")", 4, jdet, 1e-6 );
+				assertEquals( 2.0, j[ 0 ][ 0 ], 1e-6 );
+				assertEquals( 2.0, j[ 1 ][ 1 ], 1e-6 );
+
+				assertEquals( 0.0, j[ 1 ][ 0 ], 1e-6 );
+				assertEquals( 0.0, j[ 0 ][ 1 ], 1e-6 );
 				i++;
 			}
+	}
+
+	/**
+	 * The jacobian, J[ i ][ j ] = d f_i / d p_j, must match central finite
+	 * differences of apply. Uses non-affine landmarks so the kernel part is non-zero
+	 * (a transposed kernel part is invisible for affine transforms).
+	 */
+	@Test
+	public void testJacobianMatchesFiniteDifferences()
+	{
+		ndims = 2;
+		srcPts = new double[][] {
+				{ -1.0, 0.0, 1.0, 0.0, 0.5 },
+				{ 0.0, -1.0, 0.0, 1.0, 0.5 } };
+		tgtPts = new double[][] {
+				{ -1.5, 0.0, 1.0, 0.5, 1.5 },
+				{ 0.0, -1.0, 0.5, 2.0, 0.0 } };
+
+		final ThinPlateR2LogRSplineKernelTransform tps = new ThinPlateR2LogRSplineKernelTransform( ndims, srcPts, tgtPts );
+
+		final double[] p = { 0.3, -0.4 };
+		final double[][] j = tps.jacobian( p );
+		final double[][] jFiniteDiff = centralDifferenceJacobian( tps, p, 1e-5 );
+
+		for ( int c = 0; c < ndims; c++ )
+			for ( int d = 0; d < ndims; d++ )
+				assertEquals( "d f_" + c + " / d p_" + d, jFiniteDiff[ c ][ d ], j[ c ][ d ], 1e-6 );
+	}
+
+	/**
+	 * Numerically estimates the jacobian of a transform at p using central finite
+	 * differences, with the same convention as jacobian: J[ c ][ d ] = d f_c / d p_d.
+	 */
+	private static double[][] centralDifferenceJacobian( final ThinPlateR2LogRSplineKernelTransform tps, final double[] p, final double h )
+	{
+		final int n = p.length;
+		final double[][] j = new double[ n ][ n ];
+		for ( int d = 0; d < n; d++ )
+		{
+			final double[] pp = p.clone();
+			final double[] pm = p.clone();
+			pp[ d ] += h;
+			pm[ d ] -= h;
+			final double[] fp = tps.apply( pp );
+			final double[] fm = tps.apply( pm );
+			for ( int c = 0; c < n; c++ )
+				j[ c ][ d ] = ( fp[ c ] - fm[ c ] ) / ( 2 * h );
+		}
+		return j;
 	}
 }
